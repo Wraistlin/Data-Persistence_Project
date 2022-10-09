@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public class MainManager : MonoBehaviour
 {
@@ -11,17 +12,27 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text HighScoreText;
     public GameObject GameOverText;
-    
+    public static int highScore = 0;
+    public string userName;
+    public static string highScoreUser = "";
+    public bool isNewHighScore = false;
+
     private bool m_Started = false;
-    private int m_Points;
+    public int m_Points;
     
     private bool m_GameOver = false;
 
-    
+
     // Start is called before the first frame update
     void Start()
     {
+        userName = StartMenuUIHandler.playerName;
+        LoadUserAndHighScore();
+        Debug.Log("Start of Scene HighScore User: " + highScoreUser);
+        Debug.Log("User is: " + userName + " , High Score is: " + highScore);
+        HighScoreText.text = "High Score : " + highScoreUser + " : " + highScore;
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -65,12 +76,69 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = "Score : " + userName + " : " + m_Points;
     }
 
     public void GameOver()
     {
+        CompareScoreToHighScore(m_Points);
+        EstablishHighScoreAndUser();
         m_GameOver = true;
         GameOverText.SetActive(true);
+        SaveUserAndHighScore();
+    }
+
+    public bool CompareScoreToHighScore(int points)
+    {
+        if (points > highScore)
+        {
+            isNewHighScore = true;
+        }
+        else
+        {
+            isNewHighScore = false;
+        }
+        return isNewHighScore;
+    }
+
+    public void EstablishHighScoreAndUser()
+    {
+        if (isNewHighScore == true)
+        {
+            highScore = m_Points;
+            highScoreUser = userName;
+            Debug.Log("Username = " + userName + ", highscore Username = " + highScoreUser);
+        }
+    }
+
+    [System.Serializable]
+    class SaveData
+    {
+        public int highScore;
+        public string highScoreUser;
+    }
+
+    public static void SaveUserAndHighScore()
+    {
+        SaveData data = new SaveData();
+        data.highScore = highScore;
+        data.highScoreUser = highScoreUser;
+
+        string json = JsonUtility.ToJson(data);
+
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+
+    public void LoadUserAndHighScore()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+
+            highScore = data.highScore;
+            highScoreUser = data.highScoreUser;
+        }
     }
 }
