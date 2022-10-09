@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.IO;
+using UnityEditor;
 
 public class MainManager : MonoBehaviour
 {
@@ -31,8 +32,6 @@ public class MainManager : MonoBehaviour
         GameOverText.SetActive(false);
         userName = StartMenuUIHandler.playerName;
         LoadUserAndHighScore();
-        Debug.Log("Start of Scene HighScore User: " + highScoreUser);
-        Debug.Log("User is: " + userName + " , High Score is: " + highScore);
         HighScoreText.text = "High Score : " + highScoreUser + " : " + highScore;
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
@@ -108,7 +107,6 @@ public class MainManager : MonoBehaviour
         {
             highScore = m_Points;
             highScoreUser = userName;
-            Debug.Log("Username = " + userName + ", highscore Username = " + highScoreUser);
         }
     }
 
@@ -151,5 +149,14 @@ public class MainManager : MonoBehaviour
         string json = JsonUtility.ToJson(data);
 
         File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+
+    public void Exit()
+    {
+#if UNITY_EDITOR
+        EditorApplication.ExitPlaymode();
+#else
+        Application.Quit();
+#endif  
     }
 }
