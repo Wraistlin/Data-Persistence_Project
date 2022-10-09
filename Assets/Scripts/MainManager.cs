@@ -28,6 +28,7 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        GameOverText.SetActive(false);
         userName = StartMenuUIHandler.playerName;
         LoadUserAndHighScore();
         Debug.Log("Start of Scene HighScore User: " + highScoreUser);
@@ -118,7 +119,7 @@ public class MainManager : MonoBehaviour
         public string highScoreUser;
     }
 
-    public static void SaveUserAndHighScore()
+    public void SaveUserAndHighScore()
     {
         SaveData data = new SaveData();
         data.highScore = highScore;
@@ -140,5 +141,15 @@ public class MainManager : MonoBehaviour
             highScore = data.highScore;
             highScoreUser = data.highScoreUser;
         }
+    }
+    public void ResetHighScoreAndUserData()
+    {
+        SaveData data = new SaveData();
+        data.highScore = 0;
+        data.highScoreUser = "";
+
+        string json = JsonUtility.ToJson(data);
+
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
     }
 }
